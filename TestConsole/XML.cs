@@ -23,17 +23,25 @@ public class XML
 
 		BaseResources baseRes = null;
 
-		switch (teg)
-		{
-			case Tzr: baseRes = new Tzr(); break;
-			case Tzm: baseRes = new Tzm(); break;
-			case Mch: baseRes = new Mch(); break;
-			case Mat: baseRes = new Mat(); break;
-		}
+
+
 
 
 		for (int i = 0; i < sizeArr; i++)
 		{
+
+
+			switch (teg)
+			{
+				case Tzr: baseRes = new Tzr(); break;
+				case Tzm: baseRes = new Tzm(); break;
+				case Mch: baseRes = new Mch(); break;
+				case Mat: baseRes = new Mat(); break;
+
+			}
+
+
+
 			XElement el = els[i];
 			var dicAtr = GetDicAtributes(el);
 
@@ -43,6 +51,18 @@ public class XML
 			baseRes.Units = GetValueAttribute(dicAtr, "Units");
 			baseRes.Quantity = GetValueAttribute(dicAtr, "Quantity");
 			baseRes.WorkClass = GetValueAttribute(dicAtr, "WorkClass");
+
+			if (baseRes.GetType().Name == "Mat")
+			{
+
+				((Mat)baseRes).Options = GetValueAttribute(dicAtr, "Options");
+				((Mat)baseRes).Mass = GetValueAttribute(dicAtr, "Mass");
+
+				List<Koefficient> koefficients = GetKoefficients(el, false);
+
+				((Mat)baseRes).Koefficients = koefficients;
+
+			}
 
 
 			XElement elPrice = el.XPathSelectElement(".//PriceCurr");
@@ -77,8 +97,9 @@ public class XML
 		List<Positions> positions = new List<Positions>();
 
 		//перебор POSITION
-		for (int i = 0; i < rootElements.Length; i++)
+		for (int i = 10; i < rootElements.Length; i++)
 		{
+
 
 			XElement elPosition = rootElements[i];
 
@@ -112,6 +133,8 @@ public class XML
 			position.Resources = GetResources(elPosition);
 
 
+			position.Koefficient = GetKoefficients(elPosition, true);
+
 			positions.Add(position);
 
 		}
@@ -144,6 +167,60 @@ public class XML
 	}
 
 
+
+	/// <summary>Получаем коф</summary>
+	List<Koefficient> GetKoefficients(XElement el, bool isRootKoefficients)
+	{
+		var parent = el.Parent.Name;
+		bool chek = parent == "Chapter"; //получаем родительский элемент
+
+		if (isRootKoefficients)
+		{
+
+			if (chek)
+			{
+				//удаляем элемент Resources т.к. там могут содержаться вспомательные кофициенты
+				var rootElements = el.Descendants("Resources").ToArray();
+				foreach (var els in rootElements)
+				{
+					els.Remove();
+				}
+			}
+			else return default;
+
+		}
+
+
+		List<Koefficient> koefficients = new List<Koefficient>();
+		XElement[] elsKoefficients = el.XPathSelectElements(".//Koefficients/K")?.ToArray();
+
+
+
+
+
+
+		foreach (var elKoefficient in elsKoefficients)
+		{
+
+
+
+			var dicKoefficients = GetDicAtributes(elKoefficient);
+
+			int.TryParse(GetValueAttribute(dicKoefficients, "Level"), out int level);
+
+			Koefficient koff = new Koefficient()
+			{
+				Caption = GetValueAttribute(dicKoefficients, "Caption"),
+				Options = GetValueAttribute(dicKoefficients, "Options"),
+				Code = GetValueAttribute(dicKoefficients, "Code"),
+				Level = level,
+			};
+			koefficients.Add(koff);
+		}
+
+		return koefficients;
+	}
+
 	public static Dictionary<string, List<string>> GetDicAtributes(XElement el)
 	{
 		if (el == null) return default;
@@ -175,6 +252,7 @@ public class XML
 
 	}
 }
+
 
 
 

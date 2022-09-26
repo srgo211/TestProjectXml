@@ -13,6 +13,8 @@ var x = xml.GetXmlElements(path);
 
 Console.WriteLine(x);
 
+
+
 #region Models
 public class Positions
 {
@@ -31,7 +33,7 @@ public class Positions
 
 	public Quantity Quantitys { get; set; }
 	public Resources Resources { get; set; }
-	public Koefficient Koefficient { get; set; }
+	public List<Koefficient> Koefficient { get; set; }
 	public List<WorksList> Works { get; set; }
 
 }
@@ -80,6 +82,7 @@ public class Koefficient
 	public string Caption { get; set; }
 	public string Options { get; set; }
 	public int Level { get; set; }
+	public string Code { get; set; }
 }
 
 public class WorksList
@@ -165,6 +168,7 @@ public static class Expansion
 	}
 }
 #endregion
+
 
 
 
